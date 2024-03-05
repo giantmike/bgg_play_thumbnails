@@ -14,6 +14,7 @@ function getPlays()
 	
 	document.getElementById("date_to").innerHTML = toDate.toDateString();
 	document.getElementById("date_from").innerHTML = fromDate.toDateString();
+	document.getElementById("date_range").style.display = "block";
 	
 	//Using XMLRequest to avoid CORS
 	var playsArray = downloadPlays("giantmike",formatDate(fromDate),formatDate(toDate));
@@ -57,7 +58,7 @@ function showBGGCode(playsArray)
 	
 	document.getElementById("bgg_code").innerHTML=bggCode;
 	
-	document.getElementById("bgg_code_copy").style.display = "block";
+	document.getElementById("bgg_code_container").style.display = "block";
 }
 
 function formatDate(date) 

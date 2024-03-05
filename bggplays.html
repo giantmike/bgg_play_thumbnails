@@ -3,16 +3,34 @@
 <head>
 
 <style>
+	* {
+		font-family: sans-serif;
+	}
+
 	div {
 		margin: 12px;
 	}
 	
-	#bgg_code {
-		font-family:monospace;
+	.small {
+		margin: 8px;
+		font-size: 12px;
 	}
 	
-	#bgg_code_copy {
+	#weeks_back {
+		font-size: 12px;
+		width: 40px;
+	}
+	
+	#date_range, #bgg_code_container {
 		display: none;
+	}
+	
+	#bgg_code {
+		max-width: 500px;
+		font-family:monospace;
+		padding: 2px;
+		border: 1px solid #999;
+		border-radius: 2px;
 	}
 </style>
 <script src="bggplays.js"></script>
@@ -22,22 +40,23 @@
 
 	<div>
 		<button type="button" onclick="getPlays()">Get Plays</button><br/>
-		<input type="number" id="weeks_back" placeholder="0" />Weeks Back
+		<div class="small">
+			<input type="number" id="weeks_back" placeholder="0" />Weeks Back
+		</div>
 	</div>
+	
+	<br/><br/>
 
-	<div>
-		<b>From: </b><span id="date_from"></span>
+	<div id="date_range">
+		<b><span id="date_from"></span> - <span id="date_to"></span></b>
 	</div>
 	<div>
-		<b>To: </b><span id="date_to"></span>
-	</div>
-	<div>
-		<b>BGG forum code: </b><br/>
-		<blockquote>
-		<span id="bgg_code"></span>
-		<br/><br/>
-		<button type="button" onclick="copyPlays()" id="bgg_code_copy">Copy</button>
-		<blockquote>
+		<div id="bgg_code_container">
+			<b>BGG forum code: </b><br/>
+			<div id="bgg_code"></div>
+			<br/>
+			<button type="button" onclick="copyPlays()" id="bgg_code_copy">Copy</button>
+		</div>
 	</div>
 
 </body>
