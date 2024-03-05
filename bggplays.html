@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<style>
+	div {
+		margin: 12px;
+	}
+	
+	#bgg_code {
+		font-family:monospace;
+	}
+	
+	#bgg_code_copy {
+		display: none;
+	}
+</style>
+<script src="bggplays.js"></script>
+
+</head>
+<body>
+
+	<div>
+		<button type="button" onclick="getPlays()">Get Plays</button><br/>
+		<input type="number" id="weeks_back" placeholder="0" />Weeks Back
+	</div>
+
+	<div>
+		<b>From: </b><span id="date_from"></span>
+	</div>
+	<div>
+		<b>To: </b><span id="date_to"></span>
+	</div>
+	<div>
+		<b>BGG forum code: </b><br/>
+		<blockquote>
+		<span id="bgg_code"></span>
+		<br/><br/>
+		<button type="button" onclick="copyPlays()" id="bgg_code_copy">Copy</button>
+		<blockquote>
+	</div>
+
+</body>
+</html>
