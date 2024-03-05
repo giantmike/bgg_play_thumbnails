@@ -112,7 +112,8 @@ async function makeRequest(url)
 {
 	var req = new XMLHttpRequest();
 	
-	req.open('GET', url);
+	req.open('GET', url, true);
+	httpReq.setRequestHeader('Access-Control-Allow-Headers', '*');
 	
 	req.onreadystatechange = function()
 	{
