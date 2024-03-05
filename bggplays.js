@@ -1,4 +1,4 @@
-function getPlays()
+async function getPlays()
 {
 	var weeksBack = document.getElementById("weeks_back").value;
 	if (isNaN(weeksBack) || weeksBack=="")
@@ -17,7 +17,7 @@ function getPlays()
 	document.getElementById("date_range").style.display = "block";
 	
 	//Using XMLRequest to avoid CORS
-	var playsArray = downloadPlays("giantmike",formatDate(fromDate),formatDate(toDate));
+	var playsArray = await downloadPlays("giantmike",formatDate(fromDate),formatDate(toDate));
 
 	showBGGCode(playsArray);
 }
@@ -29,7 +29,7 @@ function copyPlays()
 	navigator.clipboard.writeText(playsString);
 }
 
-function showBGGCode(playsArray)
+async function showBGGCode(playsArray)
 {
 	var gameObject = {};
 	var orderedGamesArray = [];
@@ -51,7 +51,7 @@ function showBGGCode(playsArray)
 	
 	for (var i = 0; i<orderedGamesArray.length; i++)
 	{
-		var imageId = getImageId(orderedGamesArray[i]);
+		var imageId = await getImageId(orderedGamesArray[i]);
 		if (imageId.length > 0)
 			bggCode += "[ImageID=" + imageId + "square inline]"
 	}
@@ -81,82 +81,58 @@ function formatDate(date)
 //Bastardized code from https://github.com/jbodah/bgg_tools/blob/master/dist/index.html
 //Uses XMLHttpRequest to get around fetch CORS requirements
 //Pulled out logging and pagniation for simplicity
-function downloadPlays(username, mindate, maxdate)
+async function downloadPlays(username, mindate, maxdate)
 {
-	var resp = syncGet(`https://boardgamegeek.com/xmlapi2/plays?username=${username}&mindate=${mindate}&maxdate=${maxdate}&type=thing`);
+	const httpClient = new HttpClient();
+	const data = await httpClient.get(`https://boardgamegeek.com/xmlapi2/plays?username=${username}&mindate=${mindate}&maxdate=${maxdate}`);
+	var xmlDoc = new DOMParser().parseFromString(data, "text/xml");
+	return xmlDoc.children[0];
+	
+	var resp = await makeRequest(`https://boardgamegeek.com/xmlapi2/plays?username=${username}&mindate=${mindate}&maxdate=${maxdate}`);
     var xmlDoc = new DOMParser().parseFromString(resp, "text/xml");
 	return xmlDoc.children[0];
 }
 
-function getImageId(gameId)
+async function getImageId(gameId)
 {
-	var resp = syncGet(`https://boardgamegeek.com/xmlapi2/thing?id=${gameId}&type=boardgame`);
+	const httpClient = new HttpClient();
+	const data = await httpClient.get(`https://boardgamegeek.com/xmlapi2/thing?id=${gameId}&type=boardgame`);
+	var xmlDoc = new DOMParser().parseFromString(data, "text/xml");
+	var thumbailUrl = xmlDoc.children[0].children[0].children[0].getInnerHTML();
+	return parseImageIdFromUrl(thumbailUrl);
+
+	var resp = await makeRequest(`https://boardgamegeek.com/xmlapi2/thing?id=${gameId}&type=boardgame`);
     var xmlDoc = new DOMParser().parseFromString(resp, "text/xml");
 	var thumbailUrl = xmlDoc.children[0].children[0].children[0].getInnerHTML();
 	return parseImageIdFromUrl(thumbailUrl);
 }
 
 
-function syncGet(url) 
+async function makeRequest(url) 
 {
-	var tryNum = 0;
-	var out = null;
+	var req = new XMLHttpRequest();
 	
-	while(out == null) 
+	req.open('GET', url);
+	
+	req.onreadystatechange = function()
 	{
-		if (tryNum == 10) 
+		if (req.readyState === XMLHttpRequest.DONE) 
 		{
-		return;
-		}
-
-		tryNum += 1;
-		var req = new XMLHttpRequest();
-		req.onreadystatechange = (resp) => 
-		{
-		  if (req.readyState === XMLHttpRequest.DONE) 
-		  {
 			//Request complete
-
-			if (req.status == 200)
+			if (req.status >= 200 && req.status < 400)
 			{
 				//DATA! Yeah!
-				out = req.responseText;
-			} 
-			else if (req.status == 202) 
-			{
-				//Server needs to sleep
-				sleep(5000);
-			} 
-			else if (req.status == 429) 
-			{
-				//Rate limited
-				sleep(5000);
-			} 
-			else if (req.status == 0) 
-			{
-				//retry later
-				sleep(5000)
+				return req.responseText;
 			} 
 			else 
 			{
 				//fail
-				throw Exception;
+				return null;
 			}
-		  }
 		}
-		
-		req.open('GET', url, false);
-		try 
-		{
-		  req.send();
-		} 
-		catch (DOMException) 
-		{
-		  // Try again to get around sporadic CORS...
-		}
-	  }
+	}
 	
-	return out;
+	req.send();
 }
 
 function sleep(ms) {
@@ -196,3 +172,41 @@ function buildUrl(fromDate, toDate)
 	return "https://boardgamegeek.com/xmlapi2/plays?username=giantmike&mindate=2024-02-26&maxdate=2024-03-03";
 }
 */
+
+class HttpClient {
+    constructor(){}
+    async get(url) {
+        return new Promise( (resolve, reject) => {
+            const xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = (evt) => {
+                if (evt.currentTarget.readyState === 4 && evt.currentTarget.status === 200) {
+                    try {
+                        const response = evt.currentTarget.responseText;
+                        resolve(response);
+                    } catch (exception) {
+                        reject(exception);
+                    }
+                }
+            };
+            xhttp.open('GET', url, true);
+            xhttp.send();
+        });
+    }
+    async post(url, data) {
+        return new Promise( (resolve, reject) => {
+            const xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = (evt) => {
+                if (evt.currentTarget.readyState === 4 && evt.currentTarget.status === 200) {
+                    try {
+                        const response = evt.currentTarget.responseText;
+                        resolve(response);
+                    } catch (exception) {
+                        reject(exception);
+                    }
+                }
+            };
+            xhttp.open('POST', url, true);
+            xhttp.send(data);
+        });
+    }
+}
