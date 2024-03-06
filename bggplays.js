@@ -1,5 +1,10 @@
-async function getPlays()
+var bggCode = "";
+
+function getPlays()
 {
+	bggCode = "";
+	document.getElementById("bgg_code").innerHTML=bggCode;	
+
 	var weeksBack = document.getElementById("weeks_back").value;
 	if (isNaN(weeksBack) || weeksBack=="")
 		weeksBack = 0;
@@ -17,9 +22,7 @@ async function getPlays()
 	document.getElementById("date_range").style.display = "block";
 	
 	//Using XMLRequest to avoid CORS
-	var playsArray = await downloadPlays("giantmike",formatDate(fromDate),formatDate(toDate));
-
-	showBGGCode(playsArray);
+	downloadPlays("giantmike",formatDate(fromDate),formatDate(toDate), showBGGCode);
 }
 
 function copyPlays()
@@ -29,8 +32,10 @@ function copyPlays()
 	navigator.clipboard.writeText(playsString);
 }
 
-async function showBGGCode(playsArray)
+function showBGGCode(xmlResponse)
 {
+	var playsArray = xmlResponse;
+
 	var gameObject = {};
 	var orderedGamesArray = [];
 	
@@ -47,18 +52,23 @@ async function showBGGCode(playsArray)
 		}
 	}
 	
-	var bggCode = "";
-	
 	for (var i = 0; i<orderedGamesArray.length; i++)
 	{
-		var imageId = await getImageId(orderedGamesArray[i]);
-		if (imageId.length > 0)
-			bggCode += "[ImageID=" + imageId + "square inline]"
+		getImageId(orderedGamesArray[i], addImageToString);
 	}
 	
-	document.getElementById("bgg_code").innerHTML=bggCode;
-	
 	document.getElementById("bgg_code_container").style.display = "block";
+}
+
+function addImageToString(xmlResponse)
+{
+	var thumbailUrl = xmlResponse.children[0].children[0].textContent;
+	var imageId = parseImageIdFromUrl(thumbailUrl);
+
+	if (imageId.length > 0)
+		bggCode += "[ImageID=" + imageId + "square inline]";
+
+	document.getElementById("bgg_code").innerHTML=bggCode;
 }
 
 function formatDate(date) 
@@ -80,42 +90,21 @@ function formatDate(date)
 
 //Bastardized code from https://github.com/jbodah/bgg_tools/blob/master/dist/index.html
 //Uses XMLHttpRequest to get around fetch CORS requirements
-//Pulled out logging and pagniation for simplicity
-async function downloadPlays(username, mindate, maxdate)
+//Pulled out logging and pagnination for simplicity
+function downloadPlays(username, mindate, maxdate, callback)
 {
-	const httpClient = new HttpClient();
-	const data = await httpClient.get(`https://boardgamegeek.com/xmlapi2/plays?username=${username}&mindate=${mindate}&maxdate=${maxdate}`);
-	var xmlDoc = new DOMParser().parseFromString(data, "text/xml");
-	return xmlDoc.children[0];
-	
-	var resp = await makeRequest(`https://boardgamegeek.com/xmlapi2/plays?username=${username}&mindate=${mindate}&maxdate=${maxdate}`);
-    var xmlDoc = new DOMParser().parseFromString(resp, "text/xml");
-	return xmlDoc.children[0];
+	makeRequest(`https://boardgamegeek.com/xmlapi2/plays?username=${username}&mindate=${mindate}&maxdate=${maxdate}`, callback);
 }
 
-async function getImageId(gameId)
+function getImageId(gameId, callback)
 {
-	const httpClient = new HttpClient();
-	const data = await httpClient.get(`https://boardgamegeek.com/xmlapi2/thing?id=${gameId}&type=boardgame`);
-	var xmlDoc = new DOMParser().parseFromString(data, "text/xml");
-	var thumbailUrl = xmlDoc.children[0].children[0].children[0].getInnerHTML();
-	return parseImageIdFromUrl(thumbailUrl);
-
-	var resp = await makeRequest(`https://boardgamegeek.com/xmlapi2/thing?id=${gameId}&type=boardgame`);
-    var xmlDoc = new DOMParser().parseFromString(resp, "text/xml");
-	var thumbailUrl = xmlDoc.children[0].children[0].children[0].getInnerHTML();
-	return parseImageIdFromUrl(thumbailUrl);
+	makeRequest(`https://boardgamegeek.com/xmlapi2/thing?id=${gameId}&type=boardgame`, callback);
 }
 
 
-async function makeRequest(url) 
+function makeRequest(url, callback) 
 {
 	var req = new XMLHttpRequest();
-	
-	req.open('GET', url, true);
-	req.withCredentials = true;
-	req.setRequestHeader('Access-Control-Allow-Headers', '*');
-	req.setRequestHeader('Access-Control-Allow-Origin', '*');
 	
 	req.onreadystatechange = function()
 	{
@@ -125,91 +114,25 @@ async function makeRequest(url)
 			if (req.status >= 200 && req.status < 400)
 			{
 				//DATA! Yeah!
-				return req.responseText;
+				var xmlDoc = new DOMParser().parseFromString(req.responseText, "text/xml");
+				callback(xmlDoc.children[0]);
 			} 
 			else 
 			{
 				//fail
-				return null;
 			}
 		}
 	}
 	
+	req.open('GET', url, true);
 	req.send();
 }
 
 function sleep(ms) {
-	  var start = Date.now();
-	  while(Date.now() - start < ms) 
-	  {}
-	  return;
+  return new Promise(resolveFunc => setTimeout(resolveFunc, ms));
 }
 
 function parseImageIdFromUrl(url)
 {
 	return url.match("\\d+\.\\w+$")[0].split('.')[0];
-}
-
-
-/*
-Fetch stuff that doesn't work because of CORS
-async function fetchXmlFromBggAsync (url)
-{
-	let response = await fetch(url, {
-		method: "GET",
-		mode: "cors",
-		cache: "no-cache",
-		credentials: "include",
-		headers: {
-			'Content-Type': 'text/xml',
-		},
-		redirect: "follow",
-		referrerPolicy: "no-referrer",
-	});
-	let data = await response;
-	return showBGGCode(data);
-}
-
-function buildUrl(fromDate, toDate)
-{
-	return "https://boardgamegeek.com/xmlapi2/plays?username=giantmike&mindate=2024-02-26&maxdate=2024-03-03";
-}
-*/
-
-class HttpClient {
-    constructor(){}
-    async get(url) {
-        return new Promise( (resolve, reject) => {
-            const xhttp = new XMLHttpRequest();
-            xhttp.onreadystatechange = (evt) => {
-                if (evt.currentTarget.readyState === 4 && evt.currentTarget.status === 200) {
-                    try {
-                        const response = evt.currentTarget.responseText;
-                        resolve(response);
-                    } catch (exception) {
-                        reject(exception);
-                    }
-                }
-            };
-            xhttp.open('GET', url, true);
-            xhttp.send();
-        });
-    }
-    async post(url, data) {
-        return new Promise( (resolve, reject) => {
-            const xhttp = new XMLHttpRequest();
-            xhttp.onreadystatechange = (evt) => {
-                if (evt.currentTarget.readyState === 4 && evt.currentTarget.status === 200) {
-                    try {
-                        const response = evt.currentTarget.responseText;
-                        resolve(response);
-                    } catch (exception) {
-                        reject(exception);
-                    }
-                }
-            };
-            xhttp.open('POST', url, true);
-            xhttp.send(data);
-        });
-    }
 }
