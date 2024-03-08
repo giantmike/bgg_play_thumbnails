@@ -9,12 +9,13 @@
 	}
 
 	div {
-		margin: 12px;
+		//margin: 12px;
 	}
 	
 	.small {
 		margin: 8px;
 		font-size: 12px;
+		display: inline-block;
 	}
 	
 	#weeks_back {
@@ -22,51 +23,95 @@
 		width: 40px;
 	}
 	
-	#date_range, #bgg_code_container {
+	#date_range {
+		margin-top: 12px;
 		display: none;
+	}
+	
+	#bgg_code_container {
+		display: none;
+	}
+	
+	#bgg_game_list {
+		font-size: 14px;
+		margin: 12px;
+		display: grid;
+		grid-template-columns: auto min(250px) 60px;
+		grid-template-rows: auto;
+		grid-column-gap: 0px;
+  		grid-row-gap: 0px;
+		width: 80%;
+	}
+	
+	#bgg_game_list>div:nth-child(6n+1),
+	#bgg_game_list>div:nth-child(6n+2),
+	#bgg_game_list>div:nth-child(6n+3)
+	{
+  		background-color: #f9f9f9;
+  	}
+	
+	.bgg_game_col1 {
+		
+	}
+	
+	.bgg_game_col2 {
+		
+	}
+	
+	.bgg_game_col3 {
+		
+	}
+	
+	.bgg_game_item {
+		font-family: monospace;
 	}
 	
 	#bgg_code {
 		max-width: 500px;
 		font-family:monospace;
+		margin: 12px;
 		padding: 2px;
 		border: 1px solid #999;
 		border-radius: 2px;
 	}
 	
 	#version {
-		position: absolute;
-		bottom: 1px;
 		font-size: 10px;
+		margin-bottom: 10px;
 	}
 </style>
 <script src="bggplays.js"></script>
 
 </head>
 <body>
+	
+	<div id="version">version 1.4</div>
 
 	<div>
-		<button type="button" onclick="getPlays()">Get Plays</button><br/>
 		<div class="small">
-			<input type="number" id="weeks_back" placeholder="0" />Weeks Back
+			<input type="number" id="weeks_back" placeholder="0" />weeks back
 		</div>
+		<button type="button" onclick="getPlays()">Get Plays</button>
 	</div>
 	
-	<br/><br/>
-
 	<div id="date_range">
 		<b><span id="date_from"></span> - <span id="date_to"></span></b>
 	</div>
+	
+	<div>
+		<div id="bgg_game_list">
+		
+		</div>
+	</div>
+	
 	<div>
 		<div id="bgg_code_container">
 			<b>BGG forum code: </b><br/>
 			<div id="bgg_code"></div>
 			<br/>
-			<button type="button" onclick="copyPlays()" id="bgg_code_copy">Copy</button>
+			<button type="button" onclick="copyPlays()" id="bgg_code_copy">Copy forum code</button>
 		</div>
 	</div>
-	
-	<div id="version">version 1.3</div>
 
 </body>
 </html>

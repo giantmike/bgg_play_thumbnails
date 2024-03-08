@@ -1,10 +1,8 @@
-var bggCode = "";
-
 function getPlays()
 {
-	bggCode = "";
-	document.getElementById("bgg_code").innerHTML=bggCode;	
-
+	document.getElementById("bgg_game_list").innerHTML="";
+	document.getElementById("bgg_code").innerHTML="";	
+	
 	var weeksBack = document.getElementById("weeks_back").value;
 	if (isNaN(weeksBack) || weeksBack=="")
 		weeksBack = 0;
@@ -21,9 +19,77 @@ function getPlays()
 	document.getElementById("date_from").innerHTML = fromDate.toDateString();
 	document.getElementById("date_range").style.display = "block";
 	
-	//Using XMLRequest to avoid CORS
+	//Async web service call, go to showBGGCode callback function
 	downloadPlays("giantmike",formatDate(fromDate),formatDate(toDate), showBGGCode);
 }
+
+function showBGGCode(xmlResponse)
+{
+	var playsArray = xmlResponse;
+	
+	var gameObject = {};
+	var orderedGamesArray = [];
+	
+	for (var i = playsArray.children.length-1; i>= 0; i--)
+	{
+		var obj = playsArray.children[i];
+		var item = obj.children[0];
+		var gameId = item.getAttribute("objectid");
+		var name = item.getAttribute("name");
+		
+		if (!gameObject[gameId])
+		{
+			gameObject[gameId] = gameId;
+		
+			//Show game in bulleted list
+			addGameToList(gameId, name);
+			
+			//Add game to array for 
+			orderedGamesArray.push(gameId);
+			
+			//Async web service call, go to addImageToString callback function
+			getImageId(gameId, addImageToString);
+		}
+	}
+	
+	document.getElementById("bgg_code_container").style.display = "block";
+}
+
+
+
+function addGameToList(gameId, name)
+{
+	var gameListItem = "<div class='bgg_game_col1'>" + name + "</div>";
+	
+	gameListItem += "<div class='bgg_game_item bgg_game_col2' id='bgg_game_" + gameId + "'>";
+	gameListItem += "[thing=" + gameId + "][/thing]";
+	gameListItem += "</div>";
+	
+	gameListItem += "<div class='bgg_game_col3'>";
+	gameListItem += "<button type='button' onclick='copyGame(" + gameId + ")'>Copy</button>";
+	gameListItem += "</div>";
+	document.getElementById("bgg_game_list").innerHTML = gameListItem + document.getElementById("bgg_game_list").innerHTML;
+}
+
+function addImageToString(xmlResponse)
+{
+	var thumbailUrl = xmlResponse.children[0].children[0].textContent;
+	var imageId = parseImageIdFromUrl(thumbailUrl);
+	var bggCode = "";
+
+	if (imageId.length > 0)
+		bggCode += "[ImageID=" + imageId + "square inline]";
+
+	document.getElementById("bgg_code").innerHTML += bggCode;
+}
+
+function parseImageIdFromUrl(url)
+{
+	return url.match("\\d+\.\\w+$")[0].split('.')[0];
+}
+
+
+
 
 function copyPlays()
 {
@@ -32,43 +98,11 @@ function copyPlays()
 	navigator.clipboard.writeText(playsString);
 }
 
-function showBGGCode(xmlResponse)
+function copyGame(gameId)
 {
-	var playsArray = xmlResponse;
-
-	var gameObject = {};
-	var orderedGamesArray = [];
+	var playsString = document.getElementById("bgg_game_" + gameId).innerHTML;
 	
-	for (var i = playsArray.children.length-1; i>= 0; i--)
-	{
-		var obj = playsArray.children[i];
-		var item = obj.children[0];
-		var gameId = item.getAttribute("objectid")
-		
-		if (!gameObject[gameId])
-		{
-			orderedGamesArray.push(gameId);
-			gameObject[gameId] = gameId;
-		}
-	}
-	
-	for (var i = 0; i<orderedGamesArray.length; i++)
-	{
-		getImageId(orderedGamesArray[i], addImageToString);
-	}
-	
-	document.getElementById("bgg_code_container").style.display = "block";
-}
-
-function addImageToString(xmlResponse)
-{
-	var thumbailUrl = xmlResponse.children[0].children[0].textContent;
-	var imageId = parseImageIdFromUrl(thumbailUrl);
-
-	if (imageId.length > 0)
-		bggCode += "[ImageID=" + imageId + "square inline]";
-
-	document.getElementById("bgg_code").innerHTML=bggCode;
+	navigator.clipboard.writeText(playsString);
 }
 
 function formatDate(date) 
@@ -88,9 +122,8 @@ function formatDate(date)
 
 
 
-//Bastardized code from https://github.com/jbodah/bgg_tools/blob/master/dist/index.html
-//Uses XMLHttpRequest to get around fetch CORS requirements
-//Pulled out logging and pagnination for simplicity
+
+
 function downloadPlays(username, mindate, maxdate, callback)
 {
 	makeRequest(`https://boardgamegeek.com/xmlapi2/plays?username=${username}&mindate=${mindate}&maxdate=${maxdate}`, callback);
@@ -126,13 +159,4 @@ function makeRequest(url, callback)
 	
 	req.open('GET', url, true);
 	req.send();
-}
-
-function sleep(ms) {
-  return new Promise(resolveFunc => setTimeout(resolveFunc, ms));
-}
-
-function parseImageIdFromUrl(url)
-{
-	return url.match("\\d+\.\\w+$")[0].split('.')[0];
 }
