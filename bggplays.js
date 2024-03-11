@@ -59,15 +59,14 @@ function showBGGCode(xmlResponse)
 
 function addGameToList(gameId, name)
 {
-	var gameListItem = "<div class='bgg_game_col1'>" + name + "</div>";
+	var gameListItem = "<div class='bgg_game_col1'>";
+	gameListItem += "<button type='button' class='button' onclick='copyGame(this, " + gameId + ")'>" + name + "</button>";
+	gameListItem += "</div>";
 	
 	gameListItem += "<div class='bgg_game_item bgg_game_col2' id='bgg_game_" + gameId + "'>";
 	gameListItem += "[thing=" + gameId + "][/thing]";
 	gameListItem += "</div>";
 	
-	gameListItem += "<div class='bgg_game_col3'>";
-	gameListItem += "<button type='button' onclick='copyGame(" + gameId + ")'>Copy</button>";
-	gameListItem += "</div>";
 	document.getElementById("bgg_game_list").innerHTML = gameListItem + document.getElementById("bgg_game_list").innerHTML;
 }
 
@@ -91,18 +90,22 @@ function parseImageIdFromUrl(url)
 
 
 
-function copyPlays()
+function copyPlays(event)
 {
 	var playsString = document.getElementById("bgg_code").innerHTML;
 	
 	navigator.clipboard.writeText(playsString);
+	
+	event.classList.add("clicked_button");
 }
 
-function copyGame(gameId)
+function copyGame(event, gameId)
 {
 	var playsString = document.getElementById("bgg_game_" + gameId).innerHTML;
 	
 	navigator.clipboard.writeText(playsString);
+	
+	event.classList.add("clicked_button");
 }
 
 function formatDate(date) 

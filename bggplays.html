@@ -36,16 +36,15 @@
 		font-size: 14px;
 		margin: 12px;
 		display: grid;
-		grid-template-columns: auto min(250px) 60px;
+		grid-template-columns: fit-content(300px) 250px;
 		grid-template-rows: auto;
 		grid-column-gap: 0px;
   		grid-row-gap: 0px;
-		width: 80%;
+		width: auto;
 	}
 	
-	#bgg_game_list>div:nth-child(6n+1),
-	#bgg_game_list>div:nth-child(6n+2),
-	#bgg_game_list>div:nth-child(6n+3)
+	#bgg_game_list>div:nth-child(4n+1),
+	#bgg_game_list>div:nth-child(4n+2)
 	{
   		background-color: #f9f9f9;
   	}
@@ -55,11 +54,23 @@
 	}
 	
 	.bgg_game_col2 {
-		
+		padding-left: 12px;
+		vertical-align: center;
 	}
 	
-	.bgg_game_col3 {
-		
+	.button {
+		-webkit-appearance: none;
+		min-height: 32px;
+		margin: 2px 0px;
+		padding: 6px;
+		border: 1px solid #333;
+		border-radius: 4px;
+		background-color: #eee;
+		width: 100%;
+	}
+	
+	.clicked_button {
+		background-color: #ccc;
 	}
 	
 	.bgg_game_item {
@@ -75,6 +86,11 @@
 		border-radius: 2px;
 	}
 	
+	#bgg_code_copy {
+		width: 200px;
+		margin-left: 10px;
+	}
+	
 	#version {
 		font-size: 10px;
 		margin-bottom: 10px;
@@ -85,7 +101,7 @@
 </head>
 <body>
 	
-	<div id="version">version 1.4</div>
+	<div id="version">version 1.5</div>
 
 	<div>
 		<div class="small">
@@ -109,7 +125,7 @@
 			<b>BGG forum code: </b><br/>
 			<div id="bgg_code"></div>
 			<br/>
-			<button type="button" onclick="copyPlays()" id="bgg_code_copy">Copy forum code</button>
+			<button type="button" onclick="copyPlays(this)" id="bgg_code_copy" class="button">Copy forum code</button>
 		</div>
 	</div>
 
