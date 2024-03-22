@@ -1,3 +1,6 @@
+/*
+ * Main entry point from the Get Plays button. Runs all of the logic for the selected week.
+*/
 function getPlays()
 {
 	document.getElementById("bgg_game_list").innerHTML="";
@@ -19,11 +22,14 @@ function getPlays()
 	document.getElementById("date_from").innerHTML = fromDate.toDateString();
 	document.getElementById("date_range").style.display = "block";
 	
-	//Async web service call, go to showBGGCode callback function
-	downloadPlays("giantmike",formatDate(fromDate),formatDate(toDate), showBGGCode);
+	//Async web service call, go to handlePlaysArrayCallback callback function
+	downloadPlays("giantmike",formatDate(fromDate),formatDate(toDate), handlePlaysArrayCallback);
 }
 
-function showBGGCode(xmlResponse)
+/*
+ * Callback function from the API request to get the list of plays
+*/
+function handlePlaysArrayCallback(xmlResponse)
 {
 	var playsArray = xmlResponse;
 	
@@ -44,19 +50,23 @@ function showBGGCode(xmlResponse)
 			//Show game in bulleted list
 			addGameToList(gameId, name);
 			
-			//Add game to array for 
+			//Add game to array for getting thumbnails
 			orderedGamesArray.push(gameId);
-			
-			//Async web service call, go to addImageToString callback function
-			getImageId(gameId, addImageToString);
 		}
 	}
+	
+	var orderedGameList = orderedGamesArray.join(',');
+	
+	//Async web service call, go to handleThingsListCallback callback function
+	getImageIds(orderedGameList, handleThingsListCallback);
 	
 	document.getElementById("bgg_code_container").style.display = "block";
 }
 
 
-
+/*
+ * Add a single game to the list of games, with a button for copying the [thing] text
+*/
 function addGameToList(gameId, name)
 {
 	var gameListItem = "<div class='bgg_game_col1'>";
@@ -70,18 +80,29 @@ function addGameToList(gameId, name)
 	document.getElementById("bgg_game_list").innerHTML = gameListItem + document.getElementById("bgg_game_list").innerHTML;
 }
 
-function addImageToString(xmlResponse)
+/*
+ * Callback function from the API request to get the list of things from the games plays
+*/
+function handleThingsListCallback(xmlResponse)
 {
-	var thumbailUrl = xmlResponse.children[0].children[0].textContent;
-	var imageId = parseImageIdFromUrl(thumbailUrl);
 	var bggCode = "";
-
-	if (imageId.length > 0)
-		bggCode += "[ImageID=" + imageId + "square inline]";
-
-	document.getElementById("bgg_code").innerHTML += bggCode;
+	
+	for (var i = 0; i<xmlResponse.children.length; i++)
+	{
+		var thumbailUrl = xmlResponse.children[i].children[0].textContent;
+		var imageId = parseImageIdFromUrl(thumbailUrl);
+		
+	
+		if (imageId.length > 0)
+			bggCode += "[ImageID=" + imageId + "square inline]";
+	}
+	
+	document.getElementById("bgg_code").innerHTML = bggCode;
 }
 
+/*
+ * Get the thumbnail ID from the url
+*/
 function parseImageIdFromUrl(url)
 {
 	return url.match("\\d+\.\\w+$")[0].split('.')[0];
@@ -89,7 +110,9 @@ function parseImageIdFromUrl(url)
 
 
 
-
+/*
+ * Button handler to copy the list of images
+*/
 function copyPlays(event)
 {
 	var playsString = document.getElementById("bgg_code").innerHTML;
@@ -99,6 +122,9 @@ function copyPlays(event)
 	event.classList.add("clicked_button");
 }
 
+/*
+ * Button handler to copy the specific game [thing] text
+*/
 function copyGame(event, gameId)
 {
 	var playsString = document.getElementById("bgg_game_" + gameId).innerHTML;
@@ -108,6 +134,9 @@ function copyGame(event, gameId)
 	event.classList.add("clicked_button");
 }
 
+/*
+ * Formats the date in the way the BGG API expects it to be
+*/
 function formatDate(date) 
 {
     var d = new Date(date),
@@ -126,18 +155,25 @@ function formatDate(date)
 
 
 
-
+/*
+ * Call the BGG API to get the plays for the user for the daterange
+*/
 function downloadPlays(username, mindate, maxdate, callback)
 {
 	makeRequest(`https://boardgamegeek.com/xmlapi2/plays?username=${username}&mindate=${mindate}&maxdate=${maxdate}`, callback);
 }
 
-function getImageId(gameId, callback)
+/*
+ * Call the BGG API to get the image IDs from the list of games
+*/
+function getImageIds(gameList, callback)
 {
-	makeRequest(`https://boardgamegeek.com/xmlapi2/thing?id=${gameId}&type=boardgame`, callback);
+	makeRequest(`https://boardgamegeek.com/xmlapi2/thing?id=${gameList}&type=boardgame`, callback);
 }
 
-
+/*
+ * Helper function to do the work of calling the BGG APIs. Will then callback to the result handler on success
+*/
 function makeRequest(url, callback) 
 {
 	var req = new XMLHttpRequest();
