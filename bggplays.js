@@ -16,7 +16,7 @@ function getPlays()
 	var toDate = new Date();
 	toDate.setDate(toDate.getDate() - dayOfWeek - (weeksBack*7));  //Most Recent Sunday
 	var fromDate = new Date();
-	fromDate.setDate(fromDate.getDate() - dayOfWeek - (weeksBack*7) - 6);		 //The monday before that Sunday
+	fromDate.setDate(fromDate.getDate() - dayOfWeek - (weeksBack*7) - 6);	//The monday before that Sunday
 	
 	document.getElementById("date_to").innerHTML = toDate.toDateString();
 	document.getElementById("date_from").innerHTML = fromDate.toDateString();
