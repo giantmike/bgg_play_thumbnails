@@ -3,100 +3,8 @@
 <head>
 <title>giantmike weekly plays</title>
 
-<style>
-	* {
-		font-family: sans-serif;
-	}
-	
-	.small {
-		margin: 8px;
-		font-size: 14px;
-		display: inline-block;
-	}
-	
-	#weeks_back {
-		font-size: 14x;
-		width: 50px;
-		height: 20px;
-		padding: 2px;
-		text-align: center;
-	}
-	
-	#date_range {
-		margin-top: 12px;
-		display: none;
-	}
-	
-	#bgg_code_container {
-		display: none;
-	}
-	
-	#bgg_game_list {
-		font-size: 14px;
-		margin: 12px;
-		display: grid;
-		grid-template-columns: fit-content(300px) 250px;
-		grid-template-rows: auto;
-		grid-column-gap: 0px;
-  		grid-row-gap: 0px;
-		width: auto;
-	}
-	
-	#bgg_game_list>div:nth-child(4n+1),
-	#bgg_game_list>div:nth-child(4n+2)
-	{
-  		background-color: #f9f9f9;
-  	}
-	
-	.bgg_game_col2 {
-		padding-left: 12px;
-		vertical-align: center;
-	}
-	
-	.button {
-		appearance: none;
-		-webkit-appearance: none;
-		min-height: 32px;
-		margin: 2px 0px;
-		padding: 6px;
-		border: 1px solid #333;
-		border-radius: 4px;
-		background-color: #eee;
-		width: 100%;
-	}
-
-	.button.inline {
-		width: auto;
-		min-width: 15%;
-	}
-	
-	.clicked_button {
-		background-color: #ccc;
-	}
-	
-	.bgg_game_item {
-		font-family: monospace;
-	}
-	
-	#bgg_code {
-		max-width: 500px;
-		font-family:monospace;
-		margin: 12px;
-		padding: 2px;
-		border: 1px solid #999;
-		border-radius: 2px;
-	}
-	
-	#bgg_code_copy {
-		width: 200px;
-		margin-left: 10px;
-	}
-	
-	#version {
-		font-size: 10px;
-		margin-bottom: 10px;
-	}
-</style>
+<link rel="icon" type="image/png" href="avatar.png">
+<link rel="stylesheet" href="bggplays.css">
 <script src="bggplays.js"></script>
 
 </head>
@@ -104,30 +12,24 @@
 	
 	<div id="version">version 1.7</div>
 
-	<div>
+	<div id="main_form">
+		<div class="heading">Get weekly play data</div>
 		<div class="small">
-			<input type="number" id="weeks_back" placeholder="0" min="-1" max="100" />weeks back
+			<input type="number" id="weeks_back" class="number_input" placeholder="0" min="-1" max="100" />weeks back
 		</div>
 		<button type="button" onclick="getPlays()" class="button inline">Get Plays</button>
 	</div>
 	
 	<div id="date_range">
-		<b><span id="date_from"></span> - <span id="date_to"></span></b>
+		<span id="date_from"></span> - <span id="date_to"></span>
 	</div>
 	
-	<div>
-		<div id="bgg_game_list">
-		
-		</div>
-	</div>
+	<div id="bgg_game_list"></div>
 	
-	<div>
-		<div id="bgg_code_container">
-			<b>BGG forum code: </b><br/>
-			<div id="bgg_code"></div>
-			<br/>
-			<button type="button" onclick="copyPlays(this)" id="bgg_code_copy" class="button">Copy forum code</button>
-		</div>
+	<div id="bgg_code_container">
+		<div class="heading">BGG forum code: </div>
+		<div id="bgg_code"></div>
+		<button type="button" onclick="copyPlays(this)" id="bgg_code_copy" class="button">Copy forum code</button>
 	</div>
 
 </body>

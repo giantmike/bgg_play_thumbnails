@@ -98,6 +98,7 @@ function handleThingsListCallback(xmlResponse)
 	}
 	
 	document.getElementById("bgg_code").innerHTML = bggCode;
+	document.getElementById("bgg_code_copy").classList.remove("clicked_button");
 }
 
 /*
