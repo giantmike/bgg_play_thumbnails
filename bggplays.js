@@ -55,10 +55,23 @@ function handlePlaysArrayCallback(xmlResponse)
 		}
 	}
 	
-	var orderedGameList = orderedGamesArray.join(',');
-	
 	//Async web service call, go to handleThingsListCallback callback function
-	getImageIds(orderedGameList, handleThingsListCallback);
+	//BGG only allows 20 things to be gotten in one call, so break up calls
+	if (orderedGamesArray.length < 20)
+	{
+		var orderedGameList = orderedGamesArray.join(',');
+		getImageIds(orderedGameList, handleThingsListCallback);
+	}
+	else
+	{
+		var thingBlockTotal = Math.floor(orderedGamesArray.length / 20 + 1);
+		for (var thingBlock = 1; thingBlock <= thingBlockTotal; thingBlock++)
+		{
+			var orderedGamesArrayBlock = orderedGamesArray.slice(20 * (thingBlock - 1), 20 * thingBlock);
+			var orderedGameListBlock = orderedGamesArrayBlock.join(',');
+			getImageIds(orderedGameListBlock, handleThingsListCallback);
+		}
+	}
 	
 	document.getElementById("bgg_code_container").style.display = "block";
 }
@@ -97,7 +110,7 @@ function handleThingsListCallback(xmlResponse)
 			bggCode += "[ImageID=" + imageId + "square inline]";
 	}
 	
-	document.getElementById("bgg_code").innerHTML = bggCode;
+	document.getElementById("bgg_code").innerHTML += bggCode;
 	document.getElementById("bgg_code_copy").classList.remove("clicked_button");
 }
 
