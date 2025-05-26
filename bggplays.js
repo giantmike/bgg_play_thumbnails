@@ -103,7 +103,9 @@ function handleThingsListCallback(xmlResponse)
 	for (var i = 0; i<xmlResponse.children.length; i++)
 	{
 		var thumbailUrl = xmlResponse.children[i].children[0].textContent;
-		var imageId = parseImageIdFromUrl(thumbailUrl);
+		var imageId = "";
+		if (thumbailUrl.length > 0)
+			imageId = parseImageIdFromUrl(thumbailUrl);
 		
 	
 		if (imageId.length > 0)
