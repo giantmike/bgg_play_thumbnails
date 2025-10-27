@@ -189,6 +189,7 @@ function getImageIds(gameList, callback)
 
 /*
  * Helper function to do the work of calling the BGG APIs. Will then callback to the result handler on success
+Authorization: Bearer 29c2e674-4119-41e4-b03a-9c4268b511b2
 */
 function makeRequest(url, callback) 
 {
@@ -213,5 +214,8 @@ function makeRequest(url, callback)
 	}
 	
 	req.open('GET', url, true);
+
+	req.setRequestHeader('Authorization', 'Bearer 29c2e674-4119-41e4-b03a-9c4268b511b2');
+
 	req.send();
 }
